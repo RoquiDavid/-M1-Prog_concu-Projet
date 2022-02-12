@@ -5,6 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 
+//function to initialise snake
 void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_ligne, int nb_col, int id){
     player->id = id;
     player->length = size;
@@ -13,6 +14,7 @@ void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_li
     int head_placed = 0;
 
     srand(time(NULL));
+    //We randomly place the head of the snake
     while(!head_placed){
         printf("ok");
         int rand_L = rand() % nb_ligne + 0;
@@ -32,6 +34,7 @@ void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_li
 
     struct part_of_snake *current_part = NULL;
     
+    //Loop until all parts of the snake are placed
     while(part_placed < player->length){
         
         current_part = player->corpse;
@@ -41,23 +44,27 @@ void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_li
             current_part = current_part->next;
         }
         
+        //Chose a random direction
         int direction = rand() % 4 + 0;
 
         printf("placed : %d length: %d dir: %d L: %d C: %d\n", part_placed,player->length, direction,current_part->L,current_part->C);
         sleep(1);
         //printf("%d",direction);
+        //Bot direction
         if((direction == 0) & (current_part->L+1 < nb_ligne)){
             
             if(map[current_part->L+1][current_part->C]=='0'){
 
                 printf("ok1");
+                //Change map value by the id of the snake
                 map[current_part->L+1][current_part->C] = player->id+'0';
+                //Initialise the next part ligne and col
                 new_node->L = current_part->L+1;
                 new_node->C = current_part->C;
                 part_placed++;
             }
         }
-
+        //Top direction
         if((direction == 1) & (current_part->L-1 >= 0)){
             if(map[current_part->L-1][current_part->C]=='0'){
 
@@ -69,6 +76,7 @@ void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_li
             }
         }
 
+        //Right direction
         if((direction == 2) & (current_part->C+1 < nb_col)){
             if(map[current_part->L][current_part->C+1]=='0'){
 
@@ -79,7 +87,7 @@ void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_li
                 part_placed++;
             }
         }
-
+        //Left direction
         if((direction == 3) & (current_part->C-1 >=0)){
             if(map[current_part->L][current_part->C-1]=='0'){
 
@@ -96,6 +104,7 @@ void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_li
 
 }
 
+//Function that allow to move the snake
 void snake_move(snake *player,char **map){
 
     int move_done = 0;
@@ -106,20 +115,29 @@ void snake_move(snake *player,char **map){
     int old_L_next = 0;
     int old_C_next = 0;
     struct part_of_snake *head = player->corpse;
+
+    //While the move isn't done we loop
     while(!move_done){
+
+        //we chose a random direction
         int direction = rand() % 4 + 0;
 
+        //Bot direction
         if(direction == 0){
             
+            //If the snake reach an obstacle he lose 1 hp
             if(map[player->corpse->L+1][player->corpse->C]=='X'){
                 player->life_point--;
             }
+            //We update the map value
             map[player->corpse->L+1][player->corpse->C]= player->id;
+            //We stor the old value of the head
             old_L = head->L;
             old_C = head->C;
             head->L = head->L+1;
             }
         
+        //Top direction
         if(direction == 1){
             
             if(map[player->corpse->L-1][player->corpse->C]=='X'){
@@ -131,7 +149,7 @@ void snake_move(snake *player,char **map){
             head->L = head->L-1;
         }
         
-
+        //Right direction
         if(direction == 2){
             
             if(map[player->corpse->L][player->corpse->C+1]=='X'){
@@ -144,6 +162,7 @@ void snake_move(snake *player,char **map){
             
         }
 
+        //Left direction
         if(direction == 3){
             
             if(map[player->corpse->L][player->corpse->C-1]=='X'){
@@ -159,21 +178,23 @@ void snake_move(snake *player,char **map){
         move_done =1;
     }
 
+    //Once the move done we update value of all the parts of the snake
     if(move_done){
         
         
         struct part_of_snake *current_part = player->corpse;
         while (current_part->next != NULL){
             current_part = current_part->next;
-            
+            //Store the old value of the part
             old_L_next = current_part->L;
             old_C_next = current_part->C;
-
+            //Update the value of the part
             current_part->L = old_L;
             current_part->C = old_C;
-
+            //Update the old value of the part
             old_L = old_L_next;
             old_C = old_C_next;
+            //Replace the map value 
             map[current_part->L][current_part->C] = player->id+'0';
 
         }
