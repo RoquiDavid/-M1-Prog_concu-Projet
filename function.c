@@ -108,13 +108,13 @@ void grid_fill(char **map, int L, int C, int lvl){
         }
         //Right bot obstacle
         for(int i = L-3; i > L-3-perim ; i--){
-            for(int j = C-2-perim; j <= C-2; j++){
+            for(int j = C-3-perim; j < C-2; j++){
                 map[i][j] = 'X';
             }
         }
         //Right top obstacle
         for(int i = 2; i < 2+perim ; i++){
-            for(int j = C-2-perim; j <= C-2; j++){
+            for(int j = C-3-perim; j < C-2; j++){
                 map[i][j] = 'X';
             }
         }
