@@ -29,7 +29,6 @@ void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_li
     }
     
     int part_placed = 1;
-    
     srand(time(NULL));
 
     struct part_of_snake *current_part = NULL;
@@ -47,32 +46,36 @@ void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_li
         //Chose a random direction
         int direction = rand() % 4 + 0;
 
-        printf("placed : %d length: %d dir: %d L: %d C: %d\n", part_placed,player->length, direction,current_part->L,current_part->C);
-        sleep(1);
+        //printf("placed : %d length: %d dir: %d L: %d C: %d\n", part_placed,player->length, direction,current_part->L,current_part->C);
+        
         //printf("%d",direction);
         //Bot direction
         if((direction == 0) & (current_part->L+1 < nb_ligne)){
             
             if(map[current_part->L+1][current_part->C]=='0'){
 
-                printf("ok1");
+                printf("ok1\n");
                 //Change map value by the id of the snake
                 map[current_part->L+1][current_part->C] = player->id+'0';
                 //Initialise the next part ligne and col
                 new_node->L = current_part->L+1;
                 new_node->C = current_part->C;
                 part_placed++;
+
+        current_part->next = new_node;
             }
         }
         //Top direction
         if((direction == 1) & (current_part->L-1 >= 0)){
             if(map[current_part->L-1][current_part->C]=='0'){
 
-                printf("ok2");
+                printf("ok2\n");
                 map[current_part->L-1][current_part->C]= player->id+'0';
                 new_node->L = current_part->L-1;
                 new_node->C = current_part->C;
                 part_placed++;
+
+        current_part->next = new_node;
             }
         }
 
@@ -80,110 +83,119 @@ void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_li
         if((direction == 2) & (current_part->C+1 < nb_col)){
             if(map[current_part->L][current_part->C+1]=='0'){
 
-                printf("ok3");
+                printf("ok3\n");
                 map[current_part->L][current_part->C+1] = player->id+'0';
                 new_node->L = current_part->L;
                 new_node->C = current_part->C+1;
                 part_placed++;
+
+        current_part->next = new_node;
             }
         }
         //Left direction
         if((direction == 3) & (current_part->C-1 >=0)){
             if(map[current_part->L][current_part->C-1]=='0'){
 
-                printf("ok4");
+                printf("ok4\n");
                 map[current_part->L][current_part->C-1] = player->id +'0';
                 new_node->L = current_part->L;
                 new_node->C = current_part->C-1;
                 part_placed++;
+
+        current_part->next = new_node;
             }
         }
-        current_part->next = new_node;
-    }
-    
 
+        
+    }
 }
 
 //Function that allow to move the snake
 void snake_move(snake *player,char **map){
-
-    int move_done = 0;
-    srand(time(NULL));
+    printf("move");
     int old_L = 0;
     int old_C = 0;
 
     int old_L_next = 0;
     int old_C_next = 0;
     struct part_of_snake *head = player->corpse;
+    int move_done = 0;
 
-    //While the move isn't done we loop
-    while(!move_done){
-
-        //we chose a random direction
-        int direction = rand() % 4 + 0;
-
-        //Bot direction
-        if(direction == 0){
-            
-            //If the snake reach an obstacle he lose 1 hp
-            if(map[player->corpse->L+1][player->corpse->C]=='X'){
-                player->life_point--;
-            }
+    //we chose a random direction
+    int direction = rand() % 4 + 0;
+    printf("direction: %d",direction);
+    //Bot direction
+    if(direction == 0){
+        
+        //If the snake reach an obstacle he lose 1 hp
+        if(map[player->corpse->L+1][player->corpse->C]=='X'){
+            player->life_point--;
+        }
+        if(map[player->corpse->L+1][player->corpse->C]=='0'){
             //We update the map value
-            map[player->corpse->L+1][player->corpse->C]= player->id;
+            map[player->corpse->L+1][player->corpse->C]= player->id+'0';
             //We stor the old value of the head
             old_L = head->L;
             old_C = head->C;
             head->L = head->L+1;
-            }
+            move_done = 1;
+        }
+    }
+    
+    //Top direction
+    if(direction == 1){
         
-        //Top direction
-        if(direction == 1){
-            
-            if(map[player->corpse->L-1][player->corpse->C]=='X'){
-                player->life_point--;
-            }
+        if(map[player->corpse->L-1][player->corpse->C]=='X'){
+            player->life_point--;
+        }
+        if(map[player->corpse->L-1][player->corpse->C]=='0'){
+            map[player->corpse->L-1][player->corpse->C]= player->id+'0';
             old_L = head->L;
             old_C = head->C;
-            map[player->corpse->L-1][player->corpse->C]= player->id;
             head->L = head->L-1;
+            move_done = 1;
+        }
+    }
+    
+    //Right direction
+    if(direction == 2){
+        
+        if(map[player->corpse->L][player->corpse->C+1]=='X'){
+            player->life_point--;
+        }
+        if(map[player->corpse->L][player->corpse->C+1]=='0'){
+            map[player->corpse->L][player->corpse->C+1]= player->id+'0';
+            old_L = head->L;
+            old_C = head->C;
+            head->C = head->C+1;
+            move_done = 1;
         }
         
-        //Right direction
-        if(direction == 2){
-            
-            if(map[player->corpse->L][player->corpse->C+1]=='X'){
-                player->life_point--;
-            }
-            old_L = head->L;
-            old_C = head->C;
-            map[player->corpse->L][player->corpse->C+1]= player->id;
-            head->L = head->C+1;
-            
-        }
-
-        //Left direction
-        if(direction == 3){
-            
-            if(map[player->corpse->L][player->corpse->C-1]=='X'){
-                player->life_point--;
-            }
-                
-            old_L = head->L;
-            old_C = head->C;
-            map[player->corpse->L][player->corpse->C-1]= player->id;
-            head->L = head->C-1;
-            
-        }
-        move_done =1;
     }
 
-    //Once the move done we update value of all the parts of the snake
+    //Left direction
+    if(direction == 3){
+        
+        if(map[player->corpse->L][player->corpse->C-1]=='X'){
+            player->life_point--;
+        }
+        if(map[player->corpse->L][player->corpse->C-1]=='0'){
+            old_L = head->L;
+            old_C = head->C;
+            map[player->corpse->L][player->corpse->C-1]= player->id+'0';
+            head->C = head->C-1;
+            move_done = 1;
+        }            
+            
+    
+        
+    }
     if(move_done){
-        
-        
+
+        //Once the move done we update value of all the parts of the snake
         struct part_of_snake *current_part = player->corpse;
         while (current_part->next != NULL){
+            map[current_part->L][current_part->C]= player->id+'0';
             current_part = current_part->next;
             //Store the old value of the part
             old_L_next = current_part->L;
@@ -198,9 +210,11 @@ void snake_move(snake *player,char **map){
             map[current_part->L][current_part->C] = player->id+'0';
 
         }
+    }
+    
             
 
-    }
+    
 }
 int main(int argc, char* argv[], char* env[]){
 
@@ -219,12 +233,16 @@ int main(int argc, char* argv[], char* env[]){
     snake_init(s1,5,4,map,5 ,size_grid,size_grid,9);
 
     print_grid(map,size_grid,size_grid);
-    /*
+    
+    srand(time(NULL));
+    snake_move(s1,map);
+    snake_move(s1,map);
+    snake_move(s1,map);
     snake_move(s1,map);
     printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     print_grid(map,size_grid,size_grid);
 
-    
+    /*
     struct part_of_snake *head_ref = s1->corpse;
     while (head_ref->next != NULL){
         head_ref = head_ref->next;
