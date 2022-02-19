@@ -124,6 +124,222 @@ void grid_fill(char **map, int L, int C, int lvl){
     
 }
 
+
+//function to initialise snake
+void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_ligne, int nb_col, int id){
+    player->id = id;
+    player->length = size;
+    player->life_point = hp;
+    player->score = 0;
+    int head_placed = 0;
+
+    srand(time(NULL));
+    //We randomly place the head of the snake
+    while(!head_placed){
+        printf("ok");
+        int rand_L = rand() % nb_ligne + 0;
+        int rand_C = rand() % nb_col + 0;
+        if(map[rand_L][rand_C]=='0'){
+            map[rand_L][rand_C] = player->id+'0';
+            player->corpse = (part_of_snake*)malloc(sizeof(struct part_of_snake));
+            player->corpse->L = rand_L;
+            player->corpse->C = rand_C;
+            head_placed = 1;
+        }
+    }
+    
+    int part_placed = 1;
+    srand(time(NULL));
+
+    struct part_of_snake *current_part = NULL;
+    
+    //Loop until all parts of the snake are placed
+    while(part_placed < player->length){
+        
+        current_part = player->corpse;
+        struct part_of_snake *new_node = (part_of_snake *)malloc(sizeof(struct part_of_snake));
+
+        while (current_part->next != NULL){
+            current_part = current_part->next;
+        }
+        
+        //Chose a random direction
+        int direction = rand() % 4 + 0;
+
+        //printf("placed : %d length: %d dir: %d L: %d C: %d\n", part_placed,player->length, direction,current_part->L,current_part->C);
+        
+        //printf("%d",direction);
+        //Bot direction
+        if((direction == 0) & (current_part->L+1 < nb_ligne)){
+            
+            if(map[current_part->L+1][current_part->C]=='0'){
+
+                printf("ok1\n");
+                //Change map value by the id of the snake
+                map[current_part->L+1][current_part->C] = player->id+'0';
+                //Initialise the next part ligne and col
+                new_node->L = current_part->L+1;
+                new_node->C = current_part->C;
+                part_placed++;
+
+        current_part->next = new_node;
+            }
+        }
+        //Top direction
+        if((direction == 1) & (current_part->L-1 >= 0)){
+            if(map[current_part->L-1][current_part->C]=='0'){
+
+                printf("ok2\n");
+                map[current_part->L-1][current_part->C]= player->id+'0';
+                new_node->L = current_part->L-1;
+                new_node->C = current_part->C;
+                part_placed++;
+
+        current_part->next = new_node;
+            }
+        }
+
+        //Right direction
+        if((direction == 2) & (current_part->C+1 < nb_col)){
+            if(map[current_part->L][current_part->C+1]=='0'){
+
+                printf("ok3\n");
+                map[current_part->L][current_part->C+1] = player->id+'0';
+                new_node->L = current_part->L;
+                new_node->C = current_part->C+1;
+                part_placed++;
+
+        current_part->next = new_node;
+            }
+        }
+        //Left direction
+        if((direction == 3) & (current_part->C-1 >=0)){
+            if(map[current_part->L][current_part->C-1]=='0'){
+
+                printf("ok4\n");
+                map[current_part->L][current_part->C-1] = player->id +'0';
+                new_node->L = current_part->L;
+                new_node->C = current_part->C-1;
+                part_placed++;
+
+        current_part->next = new_node;
+            }
+        }
+
+        
+    }
+}
+
+//Function that allow to move the snake
+void snake_move(snake *player,char **map){
+    int old_L = 0;
+    int old_C = 0;
+
+    int old_L_next = 0;
+    int old_C_next = 0;
+    struct part_of_snake *head = player->corpse;
+    int move_done = 0;
+
+    //we chose a random direction
+    int direction = rand() % 4 + 0;
+    //Bot direction
+    if(direction == 0){
+        
+        //If the snake reach an obstacle he lose 1 hp
+        if(map[player->corpse->L+1][player->corpse->C]=='X'){
+            player->life_point--;
+        }
+        if(map[player->corpse->L+1][player->corpse->C]=='0'){
+            printf("bot");
+            //We update the map value
+            map[player->corpse->L+1][player->corpse->C]= player->id+'0';
+            //We stor the old value of the head
+            old_L = head->L;
+            old_C = head->C;
+            head->L = head->L+1;
+            move_done = 1;
+        }
+    }
+    
+    //Top direction
+    if(direction == 1){
+        
+        if(map[player->corpse->L-1][player->corpse->C]=='X'){
+            player->life_point--;
+        }
+        if(map[player->corpse->L-1][player->corpse->C]=='0'){
+            printf("top");
+            map[player->corpse->L-1][player->corpse->C]= player->id+'0';
+            old_L = head->L;
+            old_C = head->C;
+            head->L = head->L-1;
+            move_done = 1;
+        }
+    }
+    
+    //Right direction
+    if(direction == 2){
+        
+        if(map[player->corpse->L][player->corpse->C+1]=='X'){
+            player->life_point--;
+        }
+        if(map[player->corpse->L][player->corpse->C+1]=='0'){
+            printf("right");
+            map[player->corpse->L][player->corpse->C+1]= player->id+'0';
+            old_L = head->L;
+            old_C = head->C;
+            head->C = head->C+1;
+            move_done = 1;
+        }
+        
+    }
+
+    //Left direction
+    if(direction == 3){
+        
+        if(map[player->corpse->L][player->corpse->C-1]=='X'){
+            player->life_point--;
+        }
+        if(map[player->corpse->L][player->corpse->C-1]=='0'){
+            printf("left");
+            old_L = head->L;
+            old_C = head->C;
+            map[player->corpse->L][player->corpse->C-1]= player->id+'0';
+            head->C = head->C-1;
+            move_done = 1;
+        }            
+    }
+
+    if(move_done){
+
+        //Once the move done we update value of all the parts of the snake
+        struct part_of_snake *current_part = player->corpse;
+        while (current_part->next != NULL){
+            map[current_part->L][current_part->C] = player->id+'0';
+            current_part = current_part->next;
+
+            if(current_part->next == NULL){
+                map[current_part->L][current_part->C]='0';
+            }
+            //Store the old value of the part
+            old_L_next = current_part->L;
+            old_C_next = current_part->C;
+            //Update the value of the part
+            current_part->L = old_L;
+            current_part->C = old_C;
+            //Update the old value of the part
+            old_L = old_L_next;
+            old_C = old_C_next;
+            //Replace the map value 
+            map[current_part->L][current_part->C] = player->id+'0';
+        }
+
+    
+    }
+    printf("\n");
+    
+}
+
 //Function that print the map
 void print_grid(char** map, int L, int C){
     for(int i = 0; i < L; i ++){
