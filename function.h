@@ -1,3 +1,4 @@
+#include "snake.h"
 //Function that initialize the map
 char **grid_init(int L, int C, int lvl);
 
