@@ -3,10 +3,11 @@
 #include <string.h>
 
 //defining a struct for elements place (x,y) on the board
-typedef struct spart {
+typedef struct fruit {
+    char fruit_type;
     int L;
     int C;
-} part;
+} fruit;
 
 //Define a ctruct for fruits made  of 4 elements array for the places of each fruit and a boolean variable for detecting wether the fruit is captured or not
 typedef struct  fruit{

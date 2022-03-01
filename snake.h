@@ -10,6 +10,7 @@ typedef struct snake{
     int length; //The length of the snake
     int score; //The score of the snake
     int life_point; //The remaning life points of the snake
+    int speed; //The speed of the snake (basic speed = 0.1 sleep)
     struct part_of_snake  *corpse;
 }snake;
 
