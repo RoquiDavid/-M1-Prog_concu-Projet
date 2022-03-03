@@ -8,8 +8,9 @@
 int size_grid = 20;    
     //Initialisation of the map
 char **map = NULL;
-struct fruit *current_fruit = (fruit *)malloc(sizeof(struct fruit));
 
+
+struct fruit *current_fruit = NULL;
 int there_is_fruit2(char **map,int nb_ligne, int nb_col){
     //Iterate throught the map and check if a fruit is already present
     for(int col = 0; col < nb_col; col ++){
@@ -83,10 +84,23 @@ void *plateau(void *p){
         generate_fruit2(map,size_grid,size_grid,current_fruit);
         print_grid(map,size_grid,size_grid);
         printf("\n\n\n");
-        sleep(1);
     }
 }
 void *player(void *p){
+
+    struct snake *s1 = (snake *)malloc(sizeof(struct snake));
+    snake_init(s1,5,4,map,5 ,size_grid,size_grid,rand() % 9 + 0);
+    while(1){
+        snake_move(s1,map,current_fruit);
+        //This sleep represent the speed of the snake(0.1 sleep basis 
+        //and the sleeping time is increased each time the snake eat
+        //a fruit
+        sleep(s1->speed);
+    }
+}
+
+void *score(void *p){
+
     struct snake *s1 = (snake *)malloc(sizeof(struct snake));
     snake_init(s1,5,4,map,5 ,size_grid,size_grid,rand() % 9 + 0);
     while(1){
@@ -101,10 +115,11 @@ int main (int argc, char *argv[], char *env[]){
 
     pthread_t plateau_thread; 
     pthread_t player_thread; 
+    current_fruit = (fruit *)malloc(sizeof(struct fruit));
     //Initialisation of the map
     map = grid_init(size_grid,size_grid,1);
     //Fill the map
-    grid_fill(map,size_grid,size_grid,3);
+    grid_fill(map,size_grid,size_grid,4);
 
     pthread_create(&plateau_thread, NULL, plateau,NULL);
     for (int i=0; i<4 ; i++){

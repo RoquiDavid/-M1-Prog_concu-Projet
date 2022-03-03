@@ -30,6 +30,28 @@ void grid_fill(char **map, int L, int C, int lvl){
 
         //Left
         for(int i = 0; i < L; i ++){
+            map[i][0] = ' ';
+        }
+        //Right
+        for(int i = 0; i < L; i ++){
+            map[i][C-1] = ' ';
+        }
+        //Top
+        for(int j = 0; j < C; j ++){
+            map[0][j] = ' ';
+        }
+        //Bot
+        for(int j = 0; j < L; j ++){
+            map[L-1][j] = ' ';
+        }
+
+
+    }
+
+    if(lvl == 2){
+
+        //Left
+        for(int i = 0; i < L; i ++){
             map[i][0] = 'X';
         }
         //Right
@@ -47,7 +69,7 @@ void grid_fill(char **map, int L, int C, int lvl){
 
 
     }
-    if(lvl == 2){
+    if(lvl == 3){
         //We determine the range of the obstable by the /10 division of 
         //the numer of line
         int perim = round(L/10);
@@ -77,7 +99,7 @@ void grid_fill(char **map, int L, int C, int lvl){
         }
     }
 
-    if(lvl == 3){
+    if(lvl == 4){
 
           //Left
         for(int i = 0; i < L; i ++){
@@ -239,10 +261,10 @@ int is_fruit(char **map,int col, int ligne){
     if(map[col][ligne] == 'F'||map[col][ligne] == 'C'||map[col][ligne] == 'B'||map[col][ligne] == 'P'){
         return 1;
     }
-    return 0
+    return 0;
 }
 //Function that allow to move the snake
-void snake_move(snake *player,char **map, fruit *current_fruit){
+void snake_move(snake *player,char **map,fruit *current_fruit){
     int old_L = 0;
     int old_C = 0;
 
@@ -254,6 +276,10 @@ void snake_move(snake *player,char **map, fruit *current_fruit){
     //we chose a random direction
     int direction = 0;
 
+    //In this section we chose the best direction for the snake to move toward the fruit
+    
+    pthread_mutex_lock(& mutex_snake);
+    //Right
     if(head->C - current_fruit->C < 0){
 
         if(map[player->corpse->L][player->corpse->C+1]==' '||is_fruit(map,head->C+1,head->L)){
@@ -261,14 +287,14 @@ void snake_move(snake *player,char **map, fruit *current_fruit){
         }
 
     }
-
+    //LEFT
     if(head->C - current_fruit->C > 0){
 
         if(map[player->corpse->L][player->corpse->C-1]==' '||is_fruit(map,head->C-1,head->L)){
             direction = 3;
         }
     }
-
+    //TOP
     if(head->L - current_fruit->L < 0){
 
         if(map[player->corpse->L+1][player->corpse->C]==' '||is_fruit(map,head->C,head->L+1)){
@@ -276,7 +302,7 @@ void snake_move(snake *player,char **map, fruit *current_fruit){
         }
 
     }
-
+    //BOT
     if(head->L - current_fruit->L > 0){
 
         if(map[player->corpse->L-1][player->corpse->C]==' '||is_fruit(map,head->C,head->L-1)){
@@ -284,6 +310,8 @@ void snake_move(snake *player,char **map, fruit *current_fruit){
         }
 
     }
+
+    pthread_mutex_unlock(& mutex_snake);
 
     //Bot direction
     if(direction == 0){
@@ -592,7 +620,6 @@ void snake_move(snake *player,char **map, fruit *current_fruit){
 
     
     }
-    printf("\n");
     
 }
 //Function that check if a fruit is already placed in the grid

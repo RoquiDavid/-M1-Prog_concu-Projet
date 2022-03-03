@@ -1,4 +1,5 @@
 #include "snake.h"
+#include "fruit.h"
 //Function that initialize the map
 char **grid_init(int L, int C, int lvl);
 
@@ -12,5 +13,5 @@ void print_grid(char** map, int L, int C);
 void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_ligne, int nb_col, int id);
 
 //Function that allow to move the snake
-void snake_move(snake *player,char **map);
+void snake_move(snake *player,char **map,fruit *current_fruit);
 
