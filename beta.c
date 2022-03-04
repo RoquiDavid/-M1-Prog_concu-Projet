@@ -4,86 +4,22 @@
 #include "function.c"
 #include <pthread.h>
 #include <unistd.h>
-
+#include <time.h>
+pthread_mutex_t mutex_plateau = PTHREAD_MUTEX_INITIALIZER;
 int size_grid = 20;    
-    //Initialisation of the map
+//Initialisation of the map
 char **map = NULL;
-
+int score_to_win = 0;
+//Initilize variable to check the victory 
+int win = 0;
+int id_winner = -1;
 
 struct fruit *current_fruit = NULL;
-int there_is_fruit2(char **map,int nb_ligne, int nb_col){
-    //Iterate throught the map and check if a fruit is already present
-    for(int col = 0; col < nb_col; col ++){
-        
-        for(int ligne = 0; ligne < nb_ligne; ligne ++){
-            if(map[col][ligne]=='F'){
-                return 1;
-                }
 
-            if(map[col][ligne]=='C'){
-                return 1;
-            }
-
-            if(map[col][ligne]=='B'){
-                return 1;
-            }
-
-            if(map[col][ligne]=='P'){
-                return 1;
-            }
-        }
-    }
-    return 0;
-}
-
-void generate_fruit2(char **map,int nb_ligne, int nb_col,fruit *current_fruit){
-    if(!there_is_fruit2(map,nb_ligne, nb_col)){
-
-    
-        srand(time(NULL));
-        int fruit_placed = 0;
-        int num_fruit = rand() % 4 + 0;
-        
-        while(!fruit_placed){
-            int rand_L = rand() % nb_ligne + 0;
-            int rand_C = rand() % nb_col + 0;
-            if(map[rand_L][rand_C]==' '){
-
-                if(num_fruit == 0){
-                    map[rand_L][rand_C]='F';
-                    current_fruit->fruit_type = 'F';
-                    fruit_placed = 1;
-                }
-
-                if(num_fruit == 1){
-                    map[rand_L][rand_C]='C';
-                    current_fruit->fruit_type = 'C';
-                    fruit_placed = 1;
-                }
-
-                if(num_fruit == 2){
-                    map[rand_L][rand_C]='B';
-                    current_fruit->fruit_type = 'B';
-                    fruit_placed = 1;
-                }
-
-                if(num_fruit == 3){
-                    map[rand_L][rand_C]='P';
-                    current_fruit->fruit_type = 'P';
-                    fruit_placed = 1;
-                }
-                current_fruit->C = rand_C;
-                current_fruit->L = rand_L;
-            }
-        }
-    }
-}
 void *plateau(void *p){
     
     while(1){
-        generate_fruit2(map,size_grid,size_grid,current_fruit);
-        print_grid(map,size_grid,size_grid);
-        printf("\n\n\n");
+        generate_fruit(map,size_grid,size_grid,current_fruit);
     }
 }
 void *player(void *p){
@@ -92,29 +28,42 @@ void *player(void *p){
     snake_init(s1,5,4,map,5 ,size_grid,size_grid,rand() % 9 + 0);
     while(1){
         snake_move(s1,map,current_fruit);
+        pthread_mutex_lock(& mutex_plateau);
+        print_grid(map,size_grid,size_grid);
+        printf("\n\n\n");
+        pthread_mutex_unlock(& mutex_plateau);
+        /*//If the snake has no more hp remaining his thread is canceled
+        if(snake_dead(s1)){
+            printf("Le snake a touché trois fois un obstable");
+            int pthread_cancel(pthread_t s1);
+        }
+        if(s1->score==score_to_win){
+            win = 1;
+            id_winner = s1->id;
+        }
+        if(s1->score >= (score_to_win+45)){
+            printf("Le snake a dépassé de %d points le score a atteindre il est donc mort",(s1->score-score_to_win));
+            int pthread_cancel(pthread_t s1);
+        }
         //This sleep represent the speed of the snake(0.1 sleep basis 
         //and the sleeping time is increased each time the snake eat
-        //a fruit
-        sleep(s1->speed);
+        //a fruit*/
+        sleep(1);
     }
 }
 
 void *score(void *p){
-
-    struct snake *s1 = (snake *)malloc(sizeof(struct snake));
-    snake_init(s1,5,4,map,5 ,size_grid,size_grid,rand() % 9 + 0);
-    while(1){
-        snake_move(s1,map,current_fruit);
-        //This sleep represent the speed of the snake(0.1 sleep basis 
-        //and the sleeping time is increased each time the snake eat
-        //a fruit
-        sleep(s1->speed);
+    if(win){
+        printf("The snake %d gagne !",id_winner);
     }
+    
 }
 int main (int argc, char *argv[], char *env[]){
-
+    int number_of_snake = 4;
+    score_to_win = rand() % 99 + 50;
     pthread_t plateau_thread; 
     pthread_t player_thread; 
+
     current_fruit = (fruit *)malloc(sizeof(struct fruit));
     //Initialisation of the map
     map = grid_init(size_grid,size_grid,1);
@@ -122,6 +71,7 @@ int main (int argc, char *argv[], char *env[]){
     grid_fill(map,size_grid,size_grid,4);
 
     pthread_create(&plateau_thread, NULL, plateau,NULL);
+
     for (int i=0; i<4 ; i++){
         pthread_create(&player_thread, NULL, player, (void*)i);
     }
@@ -130,5 +80,6 @@ int main (int argc, char *argv[], char *env[]){
     for (int i=0; i<4 ; i++){
         pthread_join(player_thread,NULL);
     }
+    
     return 0;
 }

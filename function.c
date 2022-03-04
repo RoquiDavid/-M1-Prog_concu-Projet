@@ -6,7 +6,14 @@
 #include <pthread.h>
 
 pthread_mutex_t mutex_snake = PTHREAD_MUTEX_INITIALIZER;
-
+//Function that allow us to check if a snake is dead (hit 3 times an 
+//obstable)
+int snake_dead(snake *player){
+    if(player->life_point == 0){
+        return 1;
+    }
+    return 0;
+}
 //Function that initialize the map
 char **grid_init(int L, int C, int lvl){
     //Allocate the memory
@@ -258,9 +265,11 @@ void snake_init(snake *player, int size, int hp,char **map,int taille, int nb_li
     }
 }
 int is_fruit(char **map,int col, int ligne){
+    pthread_mutex_lock(& mutex_snake);
     if(map[col][ligne] == 'F'||map[col][ligne] == 'C'||map[col][ligne] == 'B'||map[col][ligne] == 'P'){
         return 1;
     }
+    pthread_mutex_unlock(& mutex_snake);
     return 0;
 }
 //Function that allow to move the snake
@@ -274,11 +283,12 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
     int move_done = 0;
 
     //we chose a random direction
-    int direction = 0;
+    int direction = rand() % 4 + 0;
 
     //In this section we chose the best direction for the snake to move toward the fruit
     
     pthread_mutex_lock(& mutex_snake);
+    /*
     //Right
     if(head->C - current_fruit->C < 0){
 
@@ -310,15 +320,18 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
     }
-
+    */
+    //printf("[%d][%d]   [%d][%d]\n",head->C, current_fruit->C,head->L, current_fruit->L);
     pthread_mutex_unlock(& mutex_snake);
 
     //Bot direction
     if(direction == 0){
+        //printf("BOT");
         pthread_mutex_lock(& mutex_snake);
-        //If the snake reach an obstacle he lose 1 hp
+        //If the snake reach an obstacle he lose 1 hp and lose 15 score point
         if(map[player->corpse->L+1][player->corpse->C]=='X'){
             player->life_point--;
+            player->score-=15;
         }
         if(map[player->corpse->L+1][player->corpse->C]==' '){
             
@@ -393,9 +406,11 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
     
     //Top direction
     if(direction == 1){
+        //printf("TOP");
         pthread_mutex_lock(& mutex_snake);
         if(map[player->corpse->L-1][player->corpse->C]=='X'){
             player->life_point--;
+            player->score-=15;
         }
         if(map[player->corpse->L-1][player->corpse->C]==' '){
             
@@ -460,9 +475,11 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
     
     //Right direction
     if(direction == 2){
+        //printf("RIGHT");
         pthread_mutex_lock(& mutex_snake);
         if(map[player->corpse->L][player->corpse->C+1]=='X'){
             player->life_point--;
+            player->score-=15;
         }
         if(map[player->corpse->L][player->corpse->C+1]==' '){
 
@@ -527,9 +544,11 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
 
     //Left direction
     if(direction == 3){
+        //printf("LEFT");
         pthread_mutex_lock(& mutex_snake);
         if(map[player->corpse->L][player->corpse->C-1]=='X'){
             player->life_point--;
+            player->score-=15;
         }
         if(map[player->corpse->L][player->corpse->C-1]==' '){
             
@@ -647,19 +666,18 @@ int there_is_fruit(char **map,int nb_ligne, int nb_col){
     }
     return 0;
 }
-//Function that allow us to generate a fruit
 void generate_fruit(char **map,int nb_ligne, int nb_col,fruit *current_fruit){
+
     if(!there_is_fruit(map,nb_ligne, nb_col)){
+
         srand(time(NULL));
         int fruit_placed = 0;
-        //Select a random fruit
         int num_fruit = rand() % 4 + 0;
-        
-        //While fruit is not places we select another random cell
+
+        pthread_mutex_lock(& mutex_snake);
         while(!fruit_placed){
             int rand_L = rand() % nb_ligne + 0;
             int rand_C = rand() % nb_col + 0;
-            //If cell empty we place the fruit
             if(map[rand_L][rand_C]==' '){
 
                 if(num_fruit == 0){
@@ -689,6 +707,7 @@ void generate_fruit(char **map,int nb_ligne, int nb_col,fruit *current_fruit){
                 current_fruit->L = rand_L;
             }
         }
+        pthread_mutex_unlock(& mutex_snake);
     }
 }
 //Function that print the map
