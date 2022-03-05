@@ -11,6 +11,11 @@ typedef struct snake{
     int score; //The score of the snake
     int life_point; //The remaning life points of the snake
     int speed; //The speed of the snake (basic speed = 0.1 sleep)
+    int last_move;// Record the last direction taken by the snake
+    int C_last; // Last Col played
+    int L_last; // Last line played
+    int no_move; //Check if snake position has change between his last round played
+    int last_move_status; // Variable to check if the snae has been hited in his last move
     struct part_of_snake  *corpse;
 }snake;
 

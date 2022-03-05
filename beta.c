@@ -13,28 +13,35 @@ int score_to_win = 0;
 //Initilize variable to check the victory 
 int win = 0;
 int id_winner = -1;
-
+int number of snake = -1;
 struct fruit *current_fruit = NULL;
 
 void *plateau(void *p){
     
     while(1){
         generate_fruit(map,size_grid,size_grid,current_fruit);
+        print_grid(map,size_grid,size_grid);
+        printf("\n\n\n");
+        sleep(1);
     }
 }
 void *player(void *p){
 
     struct snake *s1 = (snake *)malloc(sizeof(struct snake));
-    snake_init(s1,5,4,map,5 ,size_grid,size_grid,rand() % 9 + 0);
+    snake_init(s1,5,4,map,5 ,size_grid,size_grid,rand() % 11 + 0);
     while(1){
         snake_move(s1,map,current_fruit);
-        pthread_mutex_lock(& mutex_plateau);
-        print_grid(map,size_grid,size_grid);
-        printf("\n\n\n");
-        pthread_mutex_unlock(& mutex_plateau);
-        /*//If the snake has no more hp remaining his thread is canceled
+
+        //If the snake has no more hp remaining his thread is canceled
         if(snake_dead(s1)){
             printf("Le snake a touché trois fois un obstable");
+            part_of_snake* head = s1->corpse;
+            part_of_snake *current_node = head;
+            while ( current_node != NULL && current_node->next != NULL) {
+                map[current_node->C][current_node->L] = ' ';
+                current_node = current_node->next;
+            }
+            
             int pthread_cancel(pthread_t s1);
         }
         if(s1->score==score_to_win){
@@ -55,15 +62,20 @@ void *player(void *p){
 void *score(void *p){
     if(win){
         printf("The snake %d gagne !",id_winner);
+        exit(0);
+    }
+    if(number_of_snake == 0){
+        printf("Tous les snakes sont morts ! Fin du programme",id_winner);
+        exit(0);
     }
     
 }
 int main (int argc, char *argv[], char *env[]){
-    int number_of_snake = 4;
+    number_of_snake = 4;
     score_to_win = rand() % 99 + 50;
     pthread_t plateau_thread; 
     pthread_t player_thread; 
-
+    number_of_snake = 4;
     current_fruit = (fruit *)malloc(sizeof(struct fruit));
     //Initialisation of the map
     map = grid_init(size_grid,size_grid,1);

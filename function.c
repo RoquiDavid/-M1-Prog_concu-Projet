@@ -6,14 +6,7 @@
 #include <pthread.h>
 
 pthread_mutex_t mutex_snake = PTHREAD_MUTEX_INITIALIZER;
-//Function that allow us to check if a snake is dead (hit 3 times an 
-//obstable)
-int snake_dead(snake *player){
-    if(player->life_point == 0){
-        return 1;
-    }
-    return 0;
-}
+
 //Function that initialize the map
 char **grid_init(int L, int C, int lvl){
     //Allocate the memory
@@ -276,51 +269,55 @@ int is_fruit(char **map,int col, int ligne){
 void snake_move(snake *player,char **map,fruit *current_fruit){
     int old_L = 0;
     int old_C = 0;
-
+    //Variable use to check if the snake has eat a fruit or no
+    int fruit_eated = 0;
     int old_L_next = 0;
     int old_C_next = 0;
     struct part_of_snake *head = player->corpse;
     int move_done = 0;
 
     //we chose a random direction
-    int direction = rand() % 4 + 0;
-
+    int direction = -1;
+    int bad_direction = -2;
     //In this section we chose the best direction for the snake to move toward the fruit
     
     pthread_mutex_lock(& mutex_snake);
-    /*
+    //If the player has hited a wall we avoid this direction
+    if(player->last_move_status == -1){
+        bad_direction = player->last_move;
+    }
     //Right
-    if(head->C - current_fruit->C < 0){
-
-        if(map[player->corpse->L][player->corpse->C+1]==' '||is_fruit(map,head->C+1,head->L)){
+    //printf("R: %d \n L: %d\n ",head->C - current_fruit->C,head->C - current_fruit->C);
+    if(head->C - current_fruit->C < 0 && bad_direction!=2){
+        //printf("Right");
             direction = 2;
-        }
-
     }
     //LEFT
-    if(head->C - current_fruit->C > 0){
-
-        if(map[player->corpse->L][player->corpse->C-1]==' '||is_fruit(map,head->C-1,head->L)){
-            direction = 3;
-        }
+    if(head->C - current_fruit->C > 0 && bad_direction!=3){
+        //printf("Left");
+        direction = 3;
+        
     }
+    
     //TOP
-    if(head->L - current_fruit->L < 0){
-
-        if(map[player->corpse->L+1][player->corpse->C]==' '||is_fruit(map,head->C,head->L+1)){
-            direction = 1;
-        }
+    if(head->L - current_fruit->L < 0 && bad_direction!=0){
+        //printf("BOT");
+        direction = 0;
+        
 
     }
     //BOT
-    if(head->L - current_fruit->L > 0){
-
-        if(map[player->corpse->L-1][player->corpse->C]==' '||is_fruit(map,head->C,head->L-1)){
-            direction = 0;
-        }
+    if(head->L - current_fruit->L > 0 && bad_direction!=-1){
+        //printf("TOP");
+        direction = 1;
+        
 
     }
-    */
+    //If the snake is blocked by the strategy choosen, he just chose a random direction
+    if(player->no_move){
+        srand(time(NULL));
+        direction = rand() % 4 + 0; 
+    }
     //printf("[%d][%d]   [%d][%d]\n",head->C, current_fruit->C,head->L, current_fruit->L);
     pthread_mutex_unlock(& mutex_snake);
 
@@ -332,6 +329,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         if(map[player->corpse->L+1][player->corpse->C]=='X'){
             player->life_point--;
             player->score-=15;
+            player->last_move_status = -1;
         }
         if(map[player->corpse->L+1][player->corpse->C]==' '){
             
@@ -347,7 +345,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L+1][player->corpse->C]=='F'){
-            
+            fruit_eated = 1;
             player->score+=5;
             //We update the map value
             map[player->corpse->L+1][player->corpse->C]= player->id+' ';
@@ -361,7 +359,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L+1][player->corpse->C]=='C'){
-            
+            fruit_eated = 1;
             player->score+=3;
             //We update the map value
             map[player->corpse->L+1][player->corpse->C]= player->id+' ';
@@ -375,7 +373,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L+1][player->corpse->C]=='B'){
-            
+            fruit_eated = 1;
             player->score+=2;
             //We update the map value
             map[player->corpse->L+1][player->corpse->C]= player->id+' ';
@@ -389,7 +387,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L+1][player->corpse->C]=='P'){
-            
+            fruit_eated = 1;
             player->score+=1;
             //We update the map value
             map[player->corpse->L+1][player->corpse->C]= player->id+' ';
@@ -401,6 +399,16 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
             //Decrease the speed of the snake by increasing his sleeping time
             player->speed+=0.1;
         }
+
+        player->last_move = 0;
+        if(player->C_last == player->corpse->C && player->L_last == player->corpse->L){
+            player->no_move = 1;
+        }
+        if(player->C_last != player->corpse->C || player->L_last != player->corpse->L){
+            player->no_move = 0;
+        }
+        player->C_last = player->corpse->C;
+        player->L_last = player->corpse->L;
         pthread_mutex_unlock(& mutex_snake);
     }
     
@@ -411,6 +419,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         if(map[player->corpse->L-1][player->corpse->C]=='X'){
             player->life_point--;
             player->score-=15;
+            player->last_move_status = -1;
         }
         if(map[player->corpse->L-1][player->corpse->C]==' '){
             
@@ -424,7 +433,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L-1][player->corpse->C]=='F'){
-            
+            fruit_eated = 1;
             player->score+=5;
             map[player->corpse->L-1][player->corpse->C]= player->id+'0';
             old_L = head->L;
@@ -436,7 +445,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L-1][player->corpse->C]=='C'){
-            
+            fruit_eated = 1;
             player->score+=3;
             map[player->corpse->L-1][player->corpse->C]= player->id+'0';
             old_L = head->L;
@@ -448,7 +457,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L-1][player->corpse->C]=='B'){
-            
+            fruit_eated = 1;
             player->score+=2;
             map[player->corpse->L-1][player->corpse->C]= player->id+'0';
             old_L = head->L;
@@ -460,7 +469,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L-1][player->corpse->C]=='P'){
-            
+            fruit_eated = 1;
             player->score+=1;
             map[player->corpse->L-1][player->corpse->C]= player->id+'0';
             old_L = head->L;
@@ -470,6 +479,14 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
             //Decrease the speed of the snake by increasing his sleeping time
             player->speed+=0.1;
         }
+
+        player->last_move = 1;
+        if(player->C_last == player->corpse->C && player->L_last == player->corpse->L){
+            player->no_move = 1;
+        }
+        player->C_last = player->corpse->C;
+        player->L_last = player->corpse->L;
+        
         pthread_mutex_unlock(& mutex_snake);
     }
     
@@ -480,6 +497,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         if(map[player->corpse->L][player->corpse->C+1]=='X'){
             player->life_point--;
             player->score-=15;
+            player->last_move_status = -1;
         }
         if(map[player->corpse->L][player->corpse->C+1]==' '){
 
@@ -493,7 +511,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
         
         if(map[player->corpse->L][player->corpse->C+1]=='F'){
-            
+            fruit_eated = 1;
             player->score+=5;
             map[player->corpse->L][player->corpse->C+1]= player->id+'0';
             old_L = head->L;
@@ -505,7 +523,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L][player->corpse->C+1]=='C'){
-            
+            fruit_eated = 1;
             player->score+=3;
             map[player->corpse->L][player->corpse->C+1]= player->id+'0';
             old_L = head->L;
@@ -517,7 +535,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L][player->corpse->C+1]=='B'){
-            
+            fruit_eated = 1;
             player->score+=2;
             map[player->corpse->L][player->corpse->C+1]= player->id+'0';
             old_L = head->L;
@@ -529,7 +547,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L][player->corpse->C+1]=='P'){
-            
+            fruit_eated = 1;
             player->score+=1;
             map[player->corpse->L][player->corpse->C+1]= player->id+'0';
             old_L = head->L;
@@ -539,6 +557,13 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
             //Decrease the speed of the snake by increasing his sleeping time
             player->speed+=0.1;
         }
+
+        player->last_move = 2;
+        if(player->C_last == player->corpse->C && player->L_last == player->corpse->L){
+            player->no_move = 1;
+        }
+        player->C_last = player->corpse->C;
+        player->L_last = player->corpse->L;
         pthread_mutex_unlock(& mutex_snake);
     }
 
@@ -549,6 +574,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         if(map[player->corpse->L][player->corpse->C-1]=='X'){
             player->life_point--;
             player->score-=15;
+            player->last_move_status = -1;
         }
         if(map[player->corpse->L][player->corpse->C-1]==' '){
             
@@ -562,7 +588,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }  
 
         if(map[player->corpse->L][player->corpse->C-1]=='F'){
-            
+            fruit_eated = 1;
             player->score+=5;
             old_L = head->L;
             old_C = head->C;
@@ -574,7 +600,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L][player->corpse->C-1]=='C'){
-            
+            fruit_eated = 1;
             player->score+=3;
             old_L = head->L;
             old_C = head->C;
@@ -586,7 +612,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L][player->corpse->C-1]=='B'){
-            
+            fruit_eated = 1;
             player->score+=2;
             old_L = head->L;
             old_C = head->C;
@@ -598,7 +624,7 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
         }
 
         if(map[player->corpse->L][player->corpse->C-1]=='P'){
-            
+            fruit_eated = 1;
             player->score+=1;
             old_L = head->L;
             old_C = head->C;
@@ -608,9 +634,60 @@ void snake_move(snake *player,char **map,fruit *current_fruit){
             //Decrease the speed of the snake by increasing his sleeping time
             player->speed+=0.1;
         }    
+        player->last_move = 3;
+        if(player->C_last == player->corpse->C && player->L_last == player->corpse->L){
+            player->no_move = 1;
+        }
+        player->C_last = player->corpse->C;
+        player->L_last = player->corpse->L;
         pthread_mutex_unlock(& mutex_snake);      
     }
+    if(fruit_eated){
+        int part_added = 0;
+        struct part_of_snake* head = player->corpse;
+        part_of_snake *current_node = head;
+        while ( current_node != NULL && current_node->next != NULL) {
+            current_node = current_node->next;
+        }
+        
+        //Add the new part of the snake at the end of the linked list
+        if(map[current_node->L][current_node->C+1] == ' '& !part_added){
+            part_of_snake *new_node = (part_of_snake *) malloc(sizeof(part_of_snake));
+            new_node->C = current_node->C+1;
+            new_node->L = current_node->L;
+            new_node->next= NULL;
+            current_node->next = new_node;
+            part_added = 1;
+        }
 
+        if(map[current_node->L][current_node->C-1] == ' '& !part_added){
+            part_of_snake *new_node = (part_of_snake *) malloc(sizeof(part_of_snake));
+            new_node->C = current_node->C-1;
+            new_node->L = current_node->L;
+            new_node->next= NULL;
+            current_node->next = new_node;
+            part_added = 1;
+        }
+
+        if(map[current_node->L+1][current_node->C] == ' '& !part_added){
+            part_of_snake *new_node = (part_of_snake *) malloc(sizeof(part_of_snake));
+            new_node->C = current_node->C;
+            new_node->L = current_node->L+1;
+            new_node->next= NULL;
+            current_node->next = new_node;
+            part_added = 1;
+        }
+
+        if(map[current_node->L-1][current_node->C] == ' '& !part_added){
+            part_of_snake *new_node = (part_of_snake *) malloc(sizeof(part_of_snake));
+            new_node->C = current_node->C;
+            new_node->L = current_node->L-1;
+            new_node->next= NULL;
+            current_node->next = new_node;
+            part_added = 1;
+        }
+        
+    }
     if(move_done){
 
         //Once the move done we update value of all the parts of the snake
@@ -647,19 +724,19 @@ int there_is_fruit(char **map,int nb_ligne, int nb_col){
     for(int col = 0; col < nb_col; col ++){
         
         for(int ligne = 0; ligne < nb_ligne; ligne ++){
-            if(map[col][ligne]=='F'){
+            if(map[ligne][col]=='F'){
                 return 1;
                 }
 
-            if(map[col][ligne]=='C'){
+            if(map[ligne][col]=='C'){
                 return 1;
             }
 
-            if(map[col][ligne]=='B'){
+            if(map[ligne][col]=='B'){
                 return 1;
             }
 
-            if(map[col][ligne]=='P'){
+            if(map[ligne][col]=='P'){
                 return 1;
             }
         }
@@ -709,6 +786,17 @@ void generate_fruit(char **map,int nb_ligne, int nb_col,fruit *current_fruit){
         }
         pthread_mutex_unlock(& mutex_snake);
     }
+}
+//Function to remove dead snake
+void remove_snake(snake *player, char **map){
+    struct part_of_snake *current_part = player->corpse;
+    pthread_mutex_lock(& mutex_snake);
+    while (current_part->next != NULL){
+        map[current_part->L][current_part->C] = ' ';
+        current_part = current_part->next;
+    }
+    map[current_part->L][current_part->C] = ' ';
+    pthread_mutex_unlock(& mutex_snake);
 }
 //Function that print the map
 void print_grid(char** map, int L, int C){
