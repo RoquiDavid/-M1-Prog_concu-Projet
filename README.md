@@ -11,3 +11,11 @@
 
  A MUTEX is necessary to avoid two snake to earn points from the same fruit
  because they reach him at the same time.
+ 
+ To execute the program you have to do  (with your choosen values):
+
+ $ gcc -D n=15 -D m=15 -D l=1 -D s=4 -pthread  main.c -o main
+ $ ./main
+ 
+ NOTE: The lvl 1 return a segmentation fault and unfortunatly we didn't archive the correction of the bug
+ 
