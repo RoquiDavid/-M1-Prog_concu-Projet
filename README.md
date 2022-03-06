@@ -27,7 +27,7 @@
   - Allow snake to change side of the grid (unfortunatly we didn't archieve this goal)
   - Check for graphical implementation (Unfortunatly also we didn't archieve this goal)
 
-I worked on:
+I(ROQUI DAVID) worked on:
 - Réaliser une interface graphique (affichage en ligne de commande) du plateau
 - Chaque Snake doit être implémenté dans un thread unique ou dans un proces-
 sus (vous avez le choix).
