@@ -17,9 +17,12 @@
  $ gcc -D n=15 -D m=15 -D l=1 -D s=4 -pthread  main.c -o main
  $ ./main
  
- # NOTE: The lvl 1 return a segmentation fault and unfortunatly we didn't archive the correction of the bug
+ # NOTE1: 
+ The lvl 1 return a segmentation fault and unfortunatly we didn't archive the correction of the bug
  
- # NOTE2: I was the only one to push but my co-worker Lydia messaoui worked on : 
+ # NOTE2: 
+ 
+    I was the only one to push but my co-worker Lydia Messaoui worked on : 
  
   - Options implementation
   - Allow snake to change side of the grid (unfortunatly we didn't archieve this goal)
