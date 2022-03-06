@@ -26,4 +26,20 @@
   - Options implementation
   - Allow snake to change side of the grid (unfortunatly we didn't archieve this goal)
   - Check for graphical implementation (Unfortunatly also we didn't archieve this goal)
- 
+
+I worked on:
+- Réaliser une interface graphique (affichage en ligne de commande) du plateau
+- Chaque Snake doit être implémenté dans un thread unique ou dans un proces-
+sus (vous avez le choix).
+- Réaliser le mécanisme qui permet à chaque processus (snake) de communiquer
+avec le processus plateau afin de lui indiquer son déplacement. Attention, deux
+Snaks ne peuvent pas se trouver sur les mêmes cases au même temps.
+- Chaque Snake se déplace d’une façon aléatoire afin de capturer des fruits.
+- Réaliser une interface graphique (affichage en ligne de commande) du plateau.
+- Réaliser la fonction qui permet de gérer les scores
+-Si un fruit est capturé exactement au même moment par deux snaks que se
+passe-il ? résoudre ce conflit à l’aide des Mutex.
+- Améliorer la stratégie des Snakes afin de les rendre performants (Work, but the strategy choosen can be upgraded to a better version) 
+- Implémenter le système de gestion des scores dans un thread afin d’alléger le
+processus plateau.
+- A chaque fois qu’un Snake grandi il voit sa sa vitesse diminue de 10%
