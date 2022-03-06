@@ -21,8 +21,7 @@
  The lvl 1 return a segmentation fault and unfortunatly we didn't archive the correction of the bug
  
  # NOTE2: 
- 
-    I was the only one to push but my co-worker Lydia Messaoui worked on : 
+ I was the only one to push but my co-worker Lydia Messaoui worked on : 
  
   - Options implementation
   - Allow snake to change side of the grid (unfortunatly we didn't archieve this goal)
