@@ -16,6 +16,7 @@ typedef struct snake{
     int L_last; // Last line played
     int no_move; //Check if snake position has change between his last round played
     int last_move_status; // Variable to check if the snae has been hited in his last move
+    int dead; // Variable to check if snake respond to dead conditions (score too hight, no hp, etc)
     struct part_of_snake  *corpse;
 }snake;
 
